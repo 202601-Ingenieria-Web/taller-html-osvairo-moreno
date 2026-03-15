@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="Styles.css">
+</head>
+<body>
+    <div class="contenedor-1">
+        <label for="">
+        Buscar Personaje:
+        <input type="text" name="name" id="name" placeholder="goku">
+        </label>
+    
+    <button class="btn-1" onclick="buscarPj()">
+        Buscar PJ
+    </button>
+    </div >
+    <div class="contenedor-2">
+        <div class="caja-1" id="db-pj-info_1"></div>
+        <div class="caja-2" id="db-pj-info_2" hidden="true"></div>
+    </div>
+</body>
+<script>
+    function buscarPj() {
+        //se obtiene el contenido del input, se limpia de espacios y se convierte a minúsculas para mejorar la búsqueda
+        let pjname = document.getElementById("name").value.trim().toLowerCase();
+        
+        //Declaramos las variables para mostrar la información del personaje
+        let pjInfo1 = document.getElementById("db-pj-info_1");
+        let pjInfo2 = document.getElementById("db-pj-info_2");
+
+        if (pjname === "") return;
+
+        // Usamos el parámetro ?name= para que la API haga el trabajo de búsqueda
+        let url = `https://dragonball-api.com/api/characters?name=${pjname}`;
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error("Error en la red");
+                return response.json();
+            })
+            .then(data => {
+                // La API devuelve un array cuando se filtra por nombre
+                if (data && data.length > 0) {
+                    let personaje = data[0]; // Tomamos el primer resultado encontrado
+
+                    //Se muestra el nombre y la imagen del personaje
+                    pjInfo1.innerHTML = `
+                        <h2>${personaje.name}</h2>
+                        <p><img src="${personaje.image}" alt="${personaje.name}" width="300" style="height: 500;"></p>
+                    `;
+
+                    //Se muestra el resto de la información del personaje
+                    pjInfo2.hidden = false;
+                    pjInfo2.innerHTML = `
+                        <p><strong>Raza:</strong> ${personaje.race}</p>
+                        <p><strong>Género:</strong> ${personaje.gender}</p>
+                        <p><strong>Descripción:</strong> ${personaje.description}</p>
+                        <p><strong>Ki:</strong> ${personaje.ki}</p>
+                        <p><strong>Max Ki:</strong> ${personaje.maxKi}</p>
+                    `;
+                } else {
+                    // Si el array viene vacío, el personaje no existe
+                    pjInfo1.innerHTML = "<p>Personaje no encontrado.</p>";
+                    pjInfo2.hidden = true;
+                }
+            })
+            // En caso de error en la petición, se muestra un mensaje de error en la consola y en la página
+            .catch(error => {
+                console.error("Error:", error);
+                pjInfo1.innerHTML = "<p>Ocurrió un error al conectar con la API.</p>";
+            });
+}
+</script>
+</html>
